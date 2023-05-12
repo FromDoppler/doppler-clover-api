@@ -22,11 +22,11 @@ print_help () {
     echo "Only one of name or version parameters is required, and cannot be included together."
     echo
     echo "Examples:"
-    echo "  sh build-n-publish.sh --image=dopplerdock/CloverAPI --commit=aee25c286a7c8265e2b32ccc293f5ab0bd7a9d57 --version=v1.2.11"
-    echo "  sh build-n-publish.sh --image=dopplerdock/CloverAPI --commit=e247ba0527665eb9dd7ffbff00bb42e5073cd457 --version=v0.0.0 --pre-version-suffix=commit-e247ba0527665eb9dd7ffbff00bb42e5073cd457"
-    echo "  sh build-n-publish.sh -i=dopplerdock/CloverAPI -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5"
-    echo "  sh build-n-publish.sh -i=dopplerdock/CloverAPI -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5 -s=beta1"
-    echo "  sh build-n-publish.sh -i=dopplerdock/CloverAPI -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5 -s=pr123"
+    echo "  sh build-n-publish.sh --image=dopplerdock/clover-api --commit=aee25c286a7c8265e2b32ccc293f5ab0bd7a9d57 --version=v1.2.11"
+    echo "  sh build-n-publish.sh --image=dopplerdock/clover-api --commit=e247ba0527665eb9dd7ffbff00bb42e5073cd457 --version=v0.0.0 --pre-version-suffix=commit-e247ba0527665eb9dd7ffbff00bb42e5073cd457"
+    echo "  sh build-n-publish.sh -i=dopplerdock/clover-api -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5"
+    echo "  sh build-n-publish.sh -i=dopplerdock/clover-api -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5 -s=beta1"
+    echo "  sh build-n-publish.sh -i=dopplerdock/clover-api -c=94f85efb9c3689f409104ef7cde6813652ca59fb -v=v12.34.5 -s=pr123"
 }
 
 for i in "$@" ; do

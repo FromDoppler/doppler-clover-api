@@ -36,4 +36,4 @@ COPY --from=publish /app/publish .
 ARG version=unknown
 RUN echo $version > /app/wwwroot/version.txt
 ENTRYPOINT ["dotnet", "Doppler.CloverAPI.dll"]
-LABEL name="CloverAPI" version="$version"
+LABEL name="clover-api" version="$version"

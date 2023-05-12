@@ -39,7 +39,7 @@ pipeline {
         stage('Publish in dopplerdock') {
             environment {
                 DOCKER_CREDENTIALS_ID = "dockerhub_dopplerdock"
-                DOCKER_IMAGE_NAME = "dopplerdock/CloverAPI"
+                DOCKER_IMAGE_NAME = "dopplerdock/clover-api"
             }
             stages {
                 stage('Publish pre-release images from pull request') {

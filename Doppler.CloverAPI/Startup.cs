@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Doppler.CloverAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -30,8 +31,7 @@ public class Startup
         services.AddDopplerSecurity();
         services.AddControllers();
         services.AddCors();
-        services.AddSingleton<Weather.IWeatherForecastService, Weather.WeatherForecastService>();
-        services.AddSingleton<Weather.DataService>();
+        services.AddSingleton<ICloverService, CloverService>();
         services.AddSwaggerGen(c =>
         {
             c.AddSecurityDefinition("Bearer",

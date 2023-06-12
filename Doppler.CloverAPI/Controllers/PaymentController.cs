@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
+using Doppler.CloverAPI.DopplerSecurity;
 using Doppler.CloverAPI.Requests;
 using Doppler.CloverAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Doppler.CloverAPI.Controllers
@@ -16,6 +18,7 @@ namespace Doppler.CloverAPI.Controllers
             _cloverService = cloverService;
         }
 
+        [Authorize(Policies.OwnResourceOrSuperuser)]
         [HttpPost("/accounts/{accountname}/payment")]
         public async Task<IActionResult> CreatePayment([FromRoute] string accountname, [FromBody] PaymentRequest paymentRequest)
         {
@@ -23,6 +26,7 @@ namespace Doppler.CloverAPI.Controllers
             return Ok(paymentResponse);
         }
 
+        [Authorize(Policies.OwnResourceOrSuperuser)]
         [HttpPost("/accounts/{accountname}/refund")]
         public async Task<IActionResult> CreateRefund([FromRoute] string accountname, [FromBody] PaymentRequest paymentRequest)
         {
@@ -30,6 +34,7 @@ namespace Doppler.CloverAPI.Controllers
             return Ok(paymentResponse);
         }
 
+        [Authorize(Policies.OwnResourceOrSuperuser)]
         [HttpPost("/accounts/{accountname}/creditcard/validate")]
         public async Task<IActionResult> ValidateCreditCard([FromRoute] string accountname, [FromBody] CreditCardRequest creditCardRequest)
         {

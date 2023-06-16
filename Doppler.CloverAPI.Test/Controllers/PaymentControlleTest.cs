@@ -111,13 +111,13 @@ namespace Doppler.CloverAPI.Controllers
             // Arrange
             var creditCardRequest = new CreditCardRequest()
             {
-                ClientId = 1,
+                ClientId = "1",
                 CreditCard = new Entities.CreditCard()
             };
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<int>()))
+                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             var client = _factory.WithWebHostBuilder(builder =>
@@ -150,13 +150,13 @@ namespace Doppler.CloverAPI.Controllers
             // Arrange
             var creditCardRequest = new CreditCardRequest()
             {
-                ClientId = 1,
+                ClientId = "1",
                 CreditCard = new Entities.CreditCard()
             };
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<int>()))
+                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(false);
 
             var client = _factory.WithWebHostBuilder(builder =>

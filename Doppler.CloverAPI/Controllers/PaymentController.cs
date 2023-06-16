@@ -47,8 +47,15 @@ namespace Doppler.CloverAPI.Controllers
         [HttpPost("/accounts/{accountname}/creditcard/validate")]
         public async Task<IActionResult> ValidateCreditCard([FromRoute] string accountname, [FromBody] CreditCardRequest creditCardRequest)
         {
-            var isValidResponse = await _cloverService.IsValidCreditCard(creditCardRequest.CreditCard, creditCardRequest.ClientId);
-            return Ok(isValidResponse);
+            try
+            {
+                var isValidResponse = await _cloverService.IsValidCreditCard(creditCardRequest.CreditCard, creditCardRequest.ClientId, accountname);
+                return Ok(isValidResponse);
+            }
+            catch (CloverApiException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.ApiError);
+            }
         }
     }
 }

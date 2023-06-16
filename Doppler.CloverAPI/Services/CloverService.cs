@@ -25,50 +25,15 @@ namespace Doppler.CloverAPI.Services
             _configuration = configuration;
         }
 
-        public async Task<bool> IsValidCreditCard(CreditCard creditCard, int clientId)
+        public async Task<bool> IsValidCreditCard(CreditCard creditCard, string clientId, string email)
         {
-            //TODO: Remove it and use the clover api
+            await CreateChargeInClover(0, creditCard, clientId, email, true);
             return true;
         }
 
         public async Task<string> CreatePaymentAsync(string type, decimal chargeTotal, CreditCard creditCard, string clientId, string email)
         {
-            var source = await GetCustomerAsync(email);
-
-            if (string.IsNullOrEmpty(source))
-            {
-                var cardToken = await CreateCardTokenAsync(creditCard);
-                source = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
-            }
-
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
-            var createPaymentUrl = _configuration["CloverSettings:CreatePaymentUrl"];
-
-            var response = await client.PostAsJsonAsync(createPaymentUrl,
-                new CreateChargeRequest
-                {
-                    Amount = (int)chargeTotal * 100,
-                    Capture = true,
-                    Currency = Currency,
-                    Description = clientId,
-                    Ecomind = Ecomind,
-                    ExternalReferenceId = ExternalReferenceId,
-                    Source = source
-                });
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<CreateChargeResponse>();
-                return result.AuthorizationNumber;
-            }
-            else
-            {
-                var result = await response.Content.ReadFromJsonAsync<ApiError>();
-                var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
-
-                throw exception;
-            }
+            return await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false);
         }
 
         private async Task<string> CreateCardTokenAsync(CreditCard creditCard)
@@ -136,6 +101,56 @@ namespace Doppler.CloverAPI.Services
             {
                 var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
                 return customer.Id;
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiError>();
+                var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
+
+                throw exception;
+            }
+        }
+
+        private async Task<string> CreateChargeInClover(decimal chargeTotal, CreditCard creditCard, string clientId, string email, bool isPreAuthorization)
+        {
+            string source;
+
+            if (!isPreAuthorization)
+            {
+                source = await GetCustomerAsync(email);
+
+                if (string.IsNullOrEmpty(source))
+                {
+                    var cardToken = await CreateCardTokenAsync(creditCard);
+                    source = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+                }
+            }
+            else
+            {
+                var cardToken = await CreateCardTokenAsync(creditCard);
+                source = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+            }
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+            var createPaymentUrl = _configuration["CloverSettings:CreatePaymentUrl"];
+
+            var response = await client.PostAsJsonAsync(createPaymentUrl,
+                new CreateChargeRequest
+                {
+                    Amount = (int)chargeTotal * 100,
+                    Capture = !isPreAuthorization,
+                    Currency = Currency,
+                    Description = clientId,
+                    Ecomind = Ecomind,
+                    ExternalReferenceId = ExternalReferenceId,
+                    Source = source
+                });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CreateChargeResponse>();
+                return result.AuthorizationNumber;
             }
             else
             {

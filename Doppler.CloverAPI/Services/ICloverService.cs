@@ -7,6 +7,6 @@ namespace Doppler.CloverAPI.Services
     {
         Task<bool> IsValidCreditCard(CreditCard creditCard, int clientId);
 
-        Task<string> CreatePayment(string type, decimal chargeTotal, CreditCard creditCard, int clientId);
+        Task<string> CreatePaymentAsync(string type, decimal chargeTotal, CreditCard creditCard, string clientId, string email);
     }
 }

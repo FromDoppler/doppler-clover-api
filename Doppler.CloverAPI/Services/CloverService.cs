@@ -188,9 +188,7 @@ namespace Doppler.CloverAPI.Services
             else
             {
                 var cardToken = await CreateCardTokenAsync(creditCard);
-                var customerCreated = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
-
-                source = customerCreated != null ? customerCreated.Id : string.Empty;
+                source = cardToken;
             }
 
             using var client = new HttpClient();

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Doppler.CloverAPI.Entities;
+using Doppler.CloverAPI.Entities.Clover;
 using Doppler.CloverAPI.Exceptions;
 using Doppler.CloverAPI.Requests;
 using Doppler.CloverAPI.Response;
@@ -25,18 +26,81 @@ namespace Doppler.CloverAPI.Services
             _configuration = configuration;
         }
 
-        public async Task<bool> IsValidCreditCard(CreditCard creditCard, string clientId, string email)
+        public async Task<bool> IsValidCreditCard(Entities.CreditCard creditCard, string clientId, string email)
         {
             await CreateChargeInClover(0, creditCard, clientId, email, true);
             return true;
         }
 
-        public async Task<string> CreatePaymentAsync(string type, decimal chargeTotal, CreditCard creditCard, string clientId, string email)
+        public async Task<string> CreatePaymentAsync(string type, decimal chargeTotal, Entities.CreditCard creditCard, string clientId, string email)
         {
             return await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false);
         }
 
-        private async Task<string> CreateCardTokenAsync(CreditCard creditCard)
+        public async Task<Customer> CreateCustomerAsync(string email, string name, Entities.CreditCard creditCard)
+        {
+            var cardToken = await CreateCardTokenAsync(creditCard);
+            return await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+        }
+
+        public async Task<Customer> UpdateCustomerAsync(string email, string name, Entities.CreditCard creditCard, string cloverCustomerId)
+        {
+            var cardToken = await CreateCardTokenAsync(creditCard);
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+            var updateCustomerUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:UpdateCustomerUrl"], cloverCustomerId);
+
+            var response = await client.PutAsJsonAsync(updateCustomerUrl,
+                new CreateCustomerRequest
+                {
+                    Ecomind = Ecomind,
+                    Email = email,
+                    Name = name,
+                    Source = cardToken
+                });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
+                return new Customer { Id = customer.Id };
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiError>();
+                var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
+
+                throw exception;
+            }
+        }
+
+        public async Task<Customer> GetCustomerAsync(string email)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+            var getCustomerUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:GetCustomerUrl"], _configuration["CloverSettings:MerchantId"], email);
+            var response = await client.GetFromJsonAsync<GetCustomerResponse>(getCustomerUrl);
+
+            return response.Elements.FirstOrDefault();
+        }
+
+        public async Task RevokeCard(string customerId, string cardId)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+            var revokeCardUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:RevokeCardUrl"], customerId, cardId);
+
+            var response = await client.DeleteAsync(revokeCardUrl);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiError>();
+                var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
+
+                throw exception;
+            }
+        }
+
+        private async Task<string> CreateCardTokenAsync(Entities.CreditCard creditCard)
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("apikey", $"{_configuration["CloverSettings:ApiAccessKey"]}");
@@ -72,17 +136,7 @@ namespace Doppler.CloverAPI.Services
             }
         }
 
-        private async Task<string> GetCustomerAsync(string email)
-        {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
-            var createTokenUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:GetPaymentUrl"], _configuration["CloverSettings:MerchantId"], email);
-            var response = await client.GetFromJsonAsync<GetCustomerResponse>(createTokenUrl);
-
-            return response.Elements.Count > 0 ? response.Elements.FirstOrDefault().Id : string.Empty;
-        }
-
-        private async Task<string> CreateCustomerAsync(string email, string name, string source)
+        private async Task<Customer> CreateCustomerAsync(string email, string name, string source)
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
@@ -100,7 +154,7 @@ namespace Doppler.CloverAPI.Services
             if (response.IsSuccessStatusCode)
             {
                 var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
-                return customer.Id;
+                return new Customer { Id = customer.Id };
             }
             else
             {
@@ -111,24 +165,32 @@ namespace Doppler.CloverAPI.Services
             }
         }
 
-        private async Task<string> CreateChargeInClover(decimal chargeTotal, CreditCard creditCard, string clientId, string email, bool isPreAuthorization)
+        private async Task<string> CreateChargeInClover(decimal chargeTotal, Entities.CreditCard creditCard, string clientId, string email, bool isPreAuthorization)
         {
             string source;
 
             if (!isPreAuthorization)
             {
-                source = await GetCustomerAsync(email);
+                var customer = await GetCustomerAsync(email);
 
-                if (string.IsNullOrEmpty(source))
+                if (customer == null)
                 {
                     var cardToken = await CreateCardTokenAsync(creditCard);
-                    source = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+                    var customerCreated = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+
+                    source = customerCreated != null ? customerCreated.Id : string.Empty;
+                }
+                else
+                {
+                    source = customer.Id;
                 }
             }
             else
             {
                 var cardToken = await CreateCardTokenAsync(creditCard);
-                source = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+                var customerCreated = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+
+                source = customerCreated != null ? customerCreated.Id : string.Empty;
             }
 
             using var client = new HttpClient();

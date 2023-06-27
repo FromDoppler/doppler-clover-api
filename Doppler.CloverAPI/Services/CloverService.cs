@@ -119,7 +119,7 @@ namespace Doppler.CloverAPI.Services
                         ExpYear = creditCard.CardExpYear,
                         First6 = creditCard.CardNumber[0..6],
                         Last4 = creditCard.CardNumber[^4..],
-                        Name = creditCard.CardHolderName,
+                        Name = creditCard.CardHolderName.Split(' ').Length > 1 ? creditCard.CardHolderName : $"{creditCard.CardHolderName} {creditCard.CardHolderName}",
                         Number = creditCard.CardNumber
                     }
                 });

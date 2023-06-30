@@ -20,6 +20,7 @@ namespace Doppler.CloverAPI.Services
         private const string Ecomind = "ecom";
         private const string Currency = "usd";
         private const string ExternalReferenceId = "DopplerEmail";
+        private const string RefundReason = "requested_by_customer";
 
         private readonly IConfiguration _configuration;
 
@@ -37,6 +38,24 @@ namespace Doppler.CloverAPI.Services
         public async Task<string> CreatePaymentAsync(string type, decimal chargeTotal, Entities.CreditCard creditCard, string clientId, string email)
         {
             return await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false);
+        }
+
+        public async Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email)
+        {
+            var response = string.Empty;
+
+            var customer = await GetCustomerAsync(email);
+            if (customer != null)
+            {
+                var charge = await GetChargeByCustomerIdAndAuthorizationNumberAsync(customer.Id, authorizationNumber);
+
+                if (charge != null)
+                {
+                    response = await CreateRefund(charge.Id, chargeTotal);
+                }
+            }
+
+            return response;
         }
 
         public async Task<Customer> CreateCustomerAsync(string email, string name, Entities.CreditCard creditCard)
@@ -215,6 +234,59 @@ namespace Doppler.CloverAPI.Services
                 {
                     var result = await response.Content.ReadFromJsonAsync<CreateChargeResponse>();
                     return result.AuthorizationNumber;
+                }
+                else
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ApiError>();
+                    var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
+
+                    throw exception;
+                }
+            }
+            catch (CloverApiException ex)
+            {
+                throw ex;
+            }
+        }
+
+        private async Task<Charge> GetChargeByCustomerIdAndAuthorizationNumberAsync(string customerId, string authorizationNumber)
+        {
+            Charge charge = null;
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+            var getChargesByCustomerUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:GetChargesByCustomerUrl"], customerId);
+            var response = await client.GetFromJsonAsync<GetChargesResponse>(getChargesByCustomerUrl);
+
+            if (response != null && response.Data.Count > 0)
+            {
+                charge = response.Data.FirstOrDefault(c => c.AuthorizationNumber == authorizationNumber);
+            }
+
+            return charge;
+        }
+
+        private async Task<string> CreateRefund(string chargeId, decimal chargeTotal)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("authorization", $"Bearer {_configuration["CloverSettings:EcommerceApiToken"]}");
+                var createRefundUrl = _configuration["CloverSettings:CreateRefundUrl"];
+
+                var response = await client.PostAsJsonAsync(createRefundUrl,
+                    new CreateRefundRequest
+                    {
+                        Amount = (int)(chargeTotal * 100),
+                        Charge = chargeId,
+                        ExternalReferenceId = ExternalReferenceId,
+                        Reason = RefundReason
+                    });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<CreateRefundResponse>();
+                    return result.Metadata.AuthCode;
                 }
                 else
                 {

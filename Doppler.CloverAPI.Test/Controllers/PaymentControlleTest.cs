@@ -78,7 +78,7 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.CreateRefundAsync(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(authorizationNumber);
 
             var client = _factory.WithWebHostBuilder(builder =>

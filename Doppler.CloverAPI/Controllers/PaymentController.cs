@@ -13,7 +13,6 @@ namespace Doppler.CloverAPI.Controllers
     {
         private readonly ICloverService _cloverService;
         private readonly string _paymentType = "";
-        private readonly string _refundType = "";
 
         public PaymentController(ICloverService cloverService)
         {
@@ -37,10 +36,10 @@ namespace Doppler.CloverAPI.Controllers
 
         [Authorize(Policies.OwnResourceOrSuperuser)]
         [HttpPost("/accounts/{accountname}/refund")]
-        public async Task<IActionResult> CreateRefund([FromRoute] string accountname, [FromBody] PaymentRequest paymentRequest)
+        public async Task<IActionResult> CreateRefund([FromRoute] string accountname, [FromBody] RefundRequest refundRequest)
         {
-            var paymentResponse = await _cloverService.CreatePaymentAsync(_refundType, paymentRequest.ChargeTotal, paymentRequest.CreditCard, paymentRequest.ClientId, accountname);
-            return Ok(paymentResponse);
+            var refundResponse = await _cloverService.CreateRefundAsync(refundRequest.ChargeTotal, refundRequest.ChargeAuthorizationNumber, accountname);
+            return Ok(refundResponse);
         }
 
         [Authorize(Policies.OwnResourceOrSuperuser)]

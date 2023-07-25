@@ -132,6 +132,7 @@ namespace Doppler.CloverAPI.Services
 
             var cardHoldersName = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.CardHolderName) : creditCard.CardHolderName;
             var cardNumber = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.CardNumber) : creditCard.CardNumber;
+            var securityCode = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.SecurityCode) : creditCard.SecurityCode;
 
 
             var response = await client.PostAsJsonAsync(createTokenUrl,
@@ -140,7 +141,7 @@ namespace Doppler.CloverAPI.Services
                     Card = new Entities.Clover.Card
                     {
                         Brand = creditCard.CardType,
-                        Cvv = creditCard.SecurityCode,
+                        Cvv = securityCode,
                         ExpMonth = creditCard.CardExpMonth,
                         ExpYear = creditCard.CardExpYear,
                         First6 = cardNumber[0..6],

@@ -147,7 +147,7 @@ namespace Doppler.CloverAPI.Services
                         First6 = cardNumber[0..6],
                         Last4 = cardNumber[^4..],
                         Name = cardHoldersName.Split(' ').Length > 1 ? cardHoldersName : $"{cardHoldersName} {cardHoldersName}",
-                        Number = creditCard.CardNumber
+                        Number = cardNumber
                     }
                 });
 

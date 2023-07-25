@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Doppler.CloverAPI.Encryption;
 using Doppler.CloverAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +32,12 @@ public class Startup
         services.AddDopplerSecurity();
         services.AddControllers();
         services.AddCors();
-        services.AddSingleton<ICloverService, CloverService>();
+
+        services.Configure<EncryptionSettings>(Configuration.GetSection(nameof(EncryptionSettings)));
+        services.AddScoped<IEncryptionService, EncryptionService>();
+
+        services.AddScoped<ICloverService, CloverService>();
+
         services.AddSwaggerGen(c =>
         {
             c.AddSecurityDefinition("Bearer",

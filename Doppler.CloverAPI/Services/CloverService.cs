@@ -221,7 +221,7 @@ namespace Doppler.CloverAPI.Services
                 var response = await client.PostAsJsonAsync(createPaymentUrl,
                     new CreateChargeRequest
                     {
-                        Amount = (int)chargeTotal * 100,
+                        Amount = (int)(chargeTotal * 100),
                         Capture = !isPreAuthorization,
                         Currency = Currency,
                         Description = clientId,

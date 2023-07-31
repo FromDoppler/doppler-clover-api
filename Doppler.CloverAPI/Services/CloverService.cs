@@ -23,13 +23,11 @@ namespace Doppler.CloverAPI.Services
         private const string ExternalReferenceId = "DopplerEmail";
         private const string RefundReason = "requested_by_customer";
 
-        private readonly IEncryptionService _encryptionService;
         private readonly IConfiguration _configuration;
 
-        public CloverService(IConfiguration configuration, IEncryptionService encryptionService)
+        public CloverService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _encryptionService = encryptionService;
         }
 
         public async Task<bool> IsValidCreditCard(Entities.CreditCard creditCard, string clientId, string email)
@@ -130,24 +128,19 @@ namespace Doppler.CloverAPI.Services
             client.DefaultRequestHeaders.Add("apikey", $"{_configuration["CloverSettings:ApiAccessKey"]}");
             var createTokenUrl = _configuration["CloverSettings:CreateCardTokenUrl"];
 
-            var cardHoldersName = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.CardHolderName) : creditCard.CardHolderName;
-            var cardNumber = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.CardNumber) : creditCard.CardNumber;
-            var securityCode = creditCard.CardNumber.Length >= 20 ? _encryptionService.DecryptAES256(creditCard.SecurityCode) : creditCard.SecurityCode;
-
-
             var response = await client.PostAsJsonAsync(createTokenUrl,
                 new CardTokenRequest
                 {
                     Card = new Entities.Clover.Card
                     {
                         Brand = creditCard.CardType,
-                        Cvv = securityCode,
+                        Cvv = creditCard.SecurityCode,
                         ExpMonth = creditCard.CardExpMonth,
                         ExpYear = creditCard.CardExpYear,
-                        First6 = cardNumber[0..6],
-                        Last4 = cardNumber[^4..],
-                        Name = cardHoldersName.Split(' ').Length > 1 ? cardHoldersName : $"{cardHoldersName} {cardHoldersName}",
-                        Number = cardNumber
+                        First6 = creditCard.CardNumber[0..6],
+                        Last4 = creditCard.CardNumber[^4..],
+                        Name = creditCard.CardHolderName.Split(' ').Length > 1 ? creditCard.CardHolderName : $"{creditCard.CardHolderName} {creditCard.CardHolderName}",
+                        Number = creditCard.CardNumber
                     }
                 });
 

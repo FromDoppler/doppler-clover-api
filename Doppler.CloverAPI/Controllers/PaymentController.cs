@@ -38,8 +38,16 @@ namespace Doppler.CloverAPI.Controllers
         [HttpPost("/accounts/{accountname}/refund")]
         public async Task<IActionResult> CreateRefund([FromRoute] string accountname, [FromBody] RefundRequest refundRequest)
         {
-            var refundResponse = await _cloverService.CreateRefundAsync(refundRequest.ChargeTotal, refundRequest.ChargeAuthorizationNumber, accountname);
-            return Ok(refundResponse);
+
+            try
+            {
+                var refundResponse = await _cloverService.CreateRefundAsync(refundRequest.ChargeTotal, refundRequest.ChargeAuthorizationNumber, accountname, refundRequest.CreditCard);
+                return Ok(refundResponse);
+            }
+            catch (CloverApiException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.ApiError);
+            }
         }
 
         [Authorize(Policies.OwnResourceOrSuperuser)]

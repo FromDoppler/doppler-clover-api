@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Doppler.CloverAPI.Entities;
 using Doppler.CloverAPI.Entities.Clover;
 using Doppler.CloverAPI.Exceptions;
 using Doppler.CloverAPI.Requests;
@@ -36,19 +37,22 @@ namespace Doppler.CloverAPI.Services
             return await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false);
         }
 
-        public async Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email)
+        public async Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email, CreditCard creditCard)
         {
             var response = string.Empty;
 
             var customer = await GetCustomerAsync(email);
-            if (customer != null)
+            if (customer == null)
             {
-                var charge = await GetChargeByCustomerIdAndAuthorizationNumberAsync(customer.Id, authorizationNumber);
+                var cardToken = await CreateCardTokenAsync(creditCard);
+                customer = await CreateCustomerAsync(email, creditCard.CardHolderName, cardToken);
+            }
 
-                if (charge != null)
-                {
-                    response = await CreateRefund(charge.Id, chargeTotal);
-                }
+            var charge = await GetChargeByCustomerIdAndAuthorizationNumberAsync(customer.Id, authorizationNumber);
+
+            if (charge != null)
+            {
+                response = await CreateRefund(charge.Id, chargeTotal);
             }
 
             return response;

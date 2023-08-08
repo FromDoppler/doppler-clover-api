@@ -65,7 +65,7 @@ namespace Doppler.CloverAPI.Controllers
         }
 
         [Fact]
-        public async Task CreateRefund_Should_Return_AuthorizationNumber_When_Payment_In_Clover_Is_Successfully()
+        public async Task CreateRefund_Should_Return_AuthorizationNumber_When_Refund_In_Clover_Is_Successfully()
         {
             // Arrange
             var authorizationNumber = "TR123456";
@@ -78,7 +78,7 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.CreateRefundAsync(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.CreateRefundAsync(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CreditCard>()))
                 .ReturnsAsync(authorizationNumber);
 
             var client = _factory.WithWebHostBuilder(builder =>

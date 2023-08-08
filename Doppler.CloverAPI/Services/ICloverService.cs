@@ -10,7 +10,7 @@ namespace Doppler.CloverAPI.Services
 
         Task<string> CreatePaymentAsync(string type, decimal chargeTotal, Entities.CreditCard creditCard, string clientId, string email);
 
-        Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email);
+        Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email, CreditCard creditCard);
 
         Task<Customer> CreateCustomerAsync(string email, string name, Entities.CreditCard creditCard);
 

@@ -26,6 +26,7 @@ public class Startup
         // and Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions
         // TODO: consider replace Hellang by out of the box alternative (but it is not working fine right now)
         Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions.AddProblemDetails(services);
+        services.AddHttpContextAccessor();
         services.AddDopplerSecurity();
         services.AddControllers();
         services.AddCors();
@@ -68,15 +69,15 @@ public class Startup
     {
         Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions.UseProblemDetails(app);
 
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CloverAPI v1"));
-
-        app.UseStaticFiles();
-
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
         });
+
+        app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CloverAPI v1"));
+
+        app.UseStaticFiles();
 
         app.UseRouting();
 

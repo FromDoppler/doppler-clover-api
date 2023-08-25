@@ -64,5 +64,13 @@ namespace Doppler.CloverAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.ApiError);
             }
         }
+
+        [HttpGet("/clientip")]
+        public IActionResult TestIpClient()
+        {
+            var clientIp = HttpContext.Connection.RemoteIpAddress.ToString();
+
+            return Ok(new { clientIp });
+        }
     }
 }

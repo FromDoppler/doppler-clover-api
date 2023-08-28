@@ -26,7 +26,6 @@ public class Startup
         // and Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions
         // TODO: consider replace Hellang by out of the box alternative (but it is not working fine right now)
         Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions.AddProblemDetails(services);
-        services.AddHttpContextAccessor();
         services.AddDopplerSecurity();
         services.AddControllers();
         services.AddCors();

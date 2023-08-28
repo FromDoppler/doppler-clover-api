@@ -17,12 +17,10 @@ namespace Doppler.CloverAPI.Controllers
     {
         private readonly ICloverService _cloverService;
         private readonly string _paymentType = "";
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PaymentController(ICloverService cloverService, IHttpContextAccessor httpContextAccessor)
+        public PaymentController(ICloverService cloverService)
         {
             _cloverService = cloverService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [Authorize(Policies.OwnResourceOrSuperuser)]
@@ -80,14 +78,6 @@ namespace Doppler.CloverAPI.Controllers
         }
 
         [HttpGet("/clientipV2")]
-        public IActionResult TestIpClientV2()
-        {
-            var clientIp = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-
-            return Ok(new { clientIp });
-        }
-
-        [HttpGet("/clientipV3")]
         public IActionResult TestIpClientV3()
         {
             var xRealIpExists = HttpContext.Request.Headers.TryGetValue("X-Real-IP", out var xRealIp);
@@ -126,14 +116,28 @@ namespace Doppler.CloverAPI.Controllers
                 : Ok(new { clientIp = HttpContext.Connection.RemoteIpAddress.ToString() });
         }
 
-        [HttpGet("/clientipV4")]
+        [HttpGet("/clientipV3")]
         public IActionResult TestIpClientV4()
         {
-            var hostName = Dns.GetHostName();
-            var addressList = Dns.GetHostEntry(hostName).AddressList;
-            var ips = addressList.Select(x => x.ToString()).ToList();
+            var exists = HttpContext.Request.Headers.TryGetValue("CF-Connecting-IP", out var xRealIp);
+            if(exists)
+            {
+                var ip = xRealIp.ToString();
+                return Ok(new { clientIp = ip });
+            }
+            return Ok();
+        }
 
-            return Ok(new { clientIp = ips });
+        [HttpGet("/clientipV4")]
+        public IActionResult TestIpClientV5()
+        {
+            var exists = HttpContext.Request.Headers.TryGetValue("HTTP_CF_CONNECTING_IP", out var xRealIp);
+            if (exists)
+            {
+                var ip = xRealIp.ToString();
+                return Ok(new { clientIp = ip });
+            }
+            return Ok();
         }
     }
 }

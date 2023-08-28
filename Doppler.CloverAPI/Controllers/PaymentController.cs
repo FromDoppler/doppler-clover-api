@@ -1,7 +1,7 @@
-using System.Net.Http;
-using System.Net.Sockets;
-using System.Net;
 using System;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Doppler.CloverAPI.DopplerSecurity;
 using Doppler.CloverAPI.Exceptions;
@@ -10,7 +10,6 @@ using Doppler.CloverAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace Doppler.CloverAPI.Controllers
 {

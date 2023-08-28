@@ -129,5 +129,15 @@ namespace Doppler.CloverAPI.Controllers
                 ? Ok(new { clientIp = remoteIpAddress.ToString() })
                 : Ok(new { clientIp = HttpContext.Connection.RemoteIpAddress.ToString() });
         }
+
+        [HttpGet("/clientipV4")]
+        public IActionResult TestIpClientV4()
+        {
+            var hostName = Dns.GetHostName();
+            var addressList = Dns.GetHostEntry(hostName).AddressList;
+            var ips = addressList.Select(x => x.ToString()).ToList();
+
+            return Ok(new { clientIp = ips });
+        }
     }
 }

@@ -120,7 +120,7 @@ namespace Doppler.CloverAPI.Controllers
         public IActionResult TestIpClientV4()
         {
             var exists = HttpContext.Request.Headers.TryGetValue("CF-Connecting-IP", out var xRealIp);
-            if(exists)
+            if (exists)
             {
                 var ip = xRealIp.ToString();
                 return Ok(new { clientIp = ip });

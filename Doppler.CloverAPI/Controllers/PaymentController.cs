@@ -96,8 +96,7 @@ namespace Doppler.CloverAPI.Controllers
             {
                 if (IPAddress.TryParse(xRealIp, out var address))
                 {
-                    var isValidIP = (address.AddressFamily is AddressFamily.InterNetwork
-                                     or AddressFamily.InterNetworkV6);
+                    var isValidIP = (address.AddressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6);
 
                     if (isValidIP)
                     {
@@ -111,13 +110,11 @@ namespace Doppler.CloverAPI.Controllers
             var forwardedFor = headerValues.FirstOrDefault();
             if (!string.IsNullOrEmpty(forwardedFor))
             {
-                var ips = forwardedFor.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                      .Select(s => s.Trim());
+                var ips = forwardedFor.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim());
                 foreach (var ip in ips)
                 {
                     if (IPAddress.TryParse(ip, out var address) &&
-                        (address.AddressFamily is AddressFamily.InterNetwork
-                         or AddressFamily.InterNetworkV6))
+                        (address.AddressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6))
                     {
                         remoteIpAddress = address;
                         break;

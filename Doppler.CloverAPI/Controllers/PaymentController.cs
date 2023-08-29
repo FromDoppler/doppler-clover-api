@@ -154,7 +154,7 @@ namespace Doppler.CloverAPI.Controllers
 
         [HttpGet("/clientipV6")]
         public IActionResult TestIpClientV7()
-        {     
+        {
             var ip = HttpContext.GetServerVariable("REMOTE_ADDR");
             return Ok(new { clientIp = ip });
         }

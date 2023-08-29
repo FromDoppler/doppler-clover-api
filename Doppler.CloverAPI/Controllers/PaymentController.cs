@@ -139,5 +139,24 @@ namespace Doppler.CloverAPI.Controllers
             }
             return Ok();
         }
+
+        [HttpGet("/clientipV5")]
+        public IActionResult TestIpClientV6()
+        {
+            var exists = HttpContext.Request.Headers.TryGetValue("REMOTE_ADDR", out var xRealIp);
+            if (exists)
+            {
+                var ip = xRealIp.ToString();
+                return Ok(new { clientIp = ip });
+            }
+            return Ok();
+        }
+
+        [HttpGet("/clientipV6")]
+        public IActionResult TestIpClientV7()
+        {     
+            var ip = HttpContext.GetServerVariable("REMOTE_ADDR");
+            return Ok(new { clientIp = ip });
+        }
     }
 }

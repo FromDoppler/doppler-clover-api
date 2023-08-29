@@ -78,7 +78,7 @@ namespace Doppler.CloverAPI.Controllers
         }
 
         [HttpGet("/clientipV2")]
-        public IActionResult TestIpClientV3()
+        public IActionResult TestIpClientV2()
         {
             var xRealIpExists = HttpContext.Request.Headers.TryGetValue("X-Real-IP", out var xRealIp);
             if (xRealIpExists)
@@ -117,46 +117,11 @@ namespace Doppler.CloverAPI.Controllers
         }
 
         [HttpGet("/clientipV3")]
-        public IActionResult TestIpClientV4()
+        public IActionResult TestIpClientV3()
         {
-            var exists = HttpContext.Request.Headers.TryGetValue("CF-Connecting-IP", out var xRealIp);
-            if (exists)
-            {
-                var ip = xRealIp.ToString();
-                return Ok(new { clientIp = ip });
-            }
-            return Ok();
-        }
+            var headers = HttpContext.Request.Headers;
 
-        [HttpGet("/clientipV4")]
-        public IActionResult TestIpClientV5()
-        {
-            var exists = HttpContext.Request.Headers.TryGetValue("HTTP_CF_CONNECTING_IP", out var xRealIp);
-            if (exists)
-            {
-                var ip = xRealIp.ToString();
-                return Ok(new { clientIp = ip });
-            }
-            return Ok();
-        }
-
-        [HttpGet("/clientipV5")]
-        public IActionResult TestIpClientV6()
-        {
-            var exists = HttpContext.Request.Headers.TryGetValue("REMOTE_ADDR", out var xRealIp);
-            if (exists)
-            {
-                var ip = xRealIp.ToString();
-                return Ok(new { clientIp = ip });
-            }
-            return Ok();
-        }
-
-        [HttpGet("/clientipV6")]
-        public IActionResult TestIpClientV7()
-        {
-            var ip = HttpContext.GetServerVariable("REMOTE_ADDR");
-            return Ok(new { clientIp = ip });
+            return Ok(new { headers = headers.Select(x => $"{x.Key} = {x.Value}" ).ToList() });
         }
     }
 }

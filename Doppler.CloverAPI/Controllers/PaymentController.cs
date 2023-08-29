@@ -121,7 +121,7 @@ namespace Doppler.CloverAPI.Controllers
         {
             var headers = HttpContext.Request.Headers;
 
-            return Ok(new { headers = headers.Select(x => $"{x.Key} = {x.Value}" ).ToList() });
+            return Ok(new { headers = headers.Select(x => $"{x.Key} = {x.Value}").ToList() });
         }
     }
 }

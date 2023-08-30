@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -10,6 +11,7 @@ using Doppler.CloverAPI.Extensions;
 using Doppler.CloverAPI.Requests;
 using Doppler.CloverAPI.Response;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Doppler.CloverAPI.Services
 {
@@ -21,10 +23,12 @@ namespace Doppler.CloverAPI.Services
         private const string RefundReason = "requested_by_customer";
 
         private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
 
-        public CloverService(IConfiguration configuration)
+        public CloverService(IConfiguration configuration, ILogger<CloverService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<bool> IsValidCreditCard(Entities.CreditCard creditCard, string clientId, string email, string clientIp)
@@ -83,6 +87,9 @@ namespace Doppler.CloverAPI.Services
                     Source = cardToken
                 });
 
+            var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+            _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
             if (response.IsSuccessStatusCode)
             {
                 var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
@@ -105,6 +112,9 @@ namespace Doppler.CloverAPI.Services
             var getCustomerUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:GetCustomerUrl"], _configuration["CloverSettings:MerchantId"], email);
             var response = await client.GetFromJsonAsync<GetCustomerResponse>(getCustomerUrl);
 
+            var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+            _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
             return response.Elements.FirstOrDefault();
         }
 
@@ -116,6 +126,8 @@ namespace Doppler.CloverAPI.Services
             var revokeCardUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:RevokeCardUrl"], customerId, cardId);
 
             var response = await client.DeleteAsync(revokeCardUrl);
+            var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+            _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -178,6 +190,9 @@ namespace Doppler.CloverAPI.Services
                     Source = source
                 });
 
+            var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+            _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
             if (response.IsSuccessStatusCode)
             {
                 var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
@@ -237,6 +252,9 @@ namespace Doppler.CloverAPI.Services
                         Source = source
                     });
 
+                var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+                _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<CreateChargeResponse>();
@@ -266,6 +284,9 @@ namespace Doppler.CloverAPI.Services
             var getChargesByCustomerUrl = string.Format(CultureInfo.CurrentCulture, _configuration["CloverSettings:GetChargesByCustomerUrl"], customerId);
             var response = await client.GetFromJsonAsync<GetChargesResponse>(getChargesByCustomerUrl);
 
+            var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+            _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
             if (response != null && response.Data.Count > 0)
             {
                 charge = response.Data.FirstOrDefault(c => c.AuthorizationNumber == authorizationNumber);
@@ -292,6 +313,9 @@ namespace Doppler.CloverAPI.Services
                         Reason = RefundReason
                     });
 
+                var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
+                _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
+
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<CreateRefundResponse>();
@@ -309,6 +333,19 @@ namespace Doppler.CloverAPI.Services
             {
                 throw ex;
             }
+        }
+
+        private static string GetXForwardedForHeader(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
+        {
+            foreach (var header in headers)
+            {
+                if (header.Key == "x-forwarded-for")
+                {
+                    return header.Value.FirstOrDefault();
+                }
+            }
+
+            return "";
         }
     }
 }

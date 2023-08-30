@@ -1,5 +1,3 @@
-// unset:error
-
 using System.Net.Http.Headers;
 
 namespace Doppler.CloverAPI.Extensions

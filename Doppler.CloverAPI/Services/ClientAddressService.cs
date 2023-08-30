@@ -21,8 +21,8 @@ namespace Doppler.CloverAPI.Services
             using var connection = _connectionFactory.GetConnection();
 
             var clientIp = await connection.QuerySingleOrDefaultAsync<string>(@"SELECT [RegistrationIp]
-  FROM [dbo].[User]
-  WHERE [dbo].[User].[Email] = @email", new { email });
+FROM [dbo].[User]
+WHERE [dbo].[User].[Email] = @email", new { email });
 
             clientIp ??= _httpContextAccessor.HttpContext?.Request.Headers["Cf-Connecting-Ip"];
 

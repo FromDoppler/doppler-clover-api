@@ -99,14 +99,19 @@ public class AuthorizationTest
     {
         // Arrange
         var cloverServiceMock = new Mock<ICloverService>();
-        cloverServiceMock.Setup(s => s.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
+        cloverServiceMock.Setup(s => s.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("TAUTH123");
+
+        var clientAddressServiceMock = new Mock<IClientAddressService>();
+        clientAddressServiceMock.Setup(s => s.GetIpAddress(It.IsAny<string>()))
+            .ReturnsAsync("127.0.0.1");
 
         var client = _factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton(cloverServiceMock.Object);
+                services.AddSingleton(clientAddressServiceMock.Object);
             });
         }).CreateClient();
 

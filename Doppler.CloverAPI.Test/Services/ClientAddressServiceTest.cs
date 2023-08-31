@@ -1,9 +1,9 @@
+using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 using Doppler.CloverAPI.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using System.Data;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Doppler.CloverAPI.Services

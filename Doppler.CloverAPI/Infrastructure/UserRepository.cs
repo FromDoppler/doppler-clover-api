@@ -1,5 +1,5 @@
-using Dapper;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace Doppler.CloverAPI.Infrastructure
 {

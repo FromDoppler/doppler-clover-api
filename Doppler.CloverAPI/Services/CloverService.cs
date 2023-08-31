@@ -34,7 +34,8 @@ namespace Doppler.CloverAPI.Services
 
         public async Task<string> CreatePaymentAsync(string type, decimal chargeTotal, Entities.CreditCard creditCard, string clientId, string email)
         {
-            return await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false);
+            var isCreditCardValid = await IsValidCreditCard(creditCard, clientId, email);
+            return isCreditCardValid ? await CreateChargeInClover(chargeTotal, creditCard, clientId, email, false) : string.Empty;
         }
 
         public async Task<string> CreateRefundAsync(decimal chargeTotal, string authorizationNumber, string email, CreditCard creditCard)

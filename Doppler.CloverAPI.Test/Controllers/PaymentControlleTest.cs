@@ -37,14 +37,19 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(authorizationNumber);
+
+            var clientAddressServiceMock = new Mock<IClientAddressService>();
+            clientAddressServiceMock.Setup(s => s.GetIpAddress(It.IsAny<string>()))
+                .ReturnsAsync("127.0.0.1");
 
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddSingleton(cloverServiceMock.Object);
+                    services.AddSingleton(clientAddressServiceMock.Object);
                 });
 
             }).CreateClient();
@@ -78,14 +83,19 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.CreateRefundAsync(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CreditCard>()))
+                .Setup(x => x.CreateRefundAsync(It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CreditCard>(), It.IsAny<string>()))
                 .ReturnsAsync(authorizationNumber);
+
+            var clientAddressServiceMock = new Mock<IClientAddressService>();
+            clientAddressServiceMock.Setup(s => s.GetIpAddress(It.IsAny<string>()))
+                .ReturnsAsync("127.0.0.1");
 
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddSingleton(cloverServiceMock.Object);
+                    services.AddSingleton(clientAddressServiceMock.Object);
                 });
 
             }).CreateClient();
@@ -117,14 +127,19 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
+
+            var clientAddressServiceMock = new Mock<IClientAddressService>();
+            clientAddressServiceMock.Setup(s => s.GetIpAddress(It.IsAny<string>()))
+                .ReturnsAsync("127.0.0.1");
 
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddSingleton(cloverServiceMock.Object);
+                    services.AddSingleton(clientAddressServiceMock.Object);
                 });
 
             }).CreateClient();
@@ -156,14 +171,19 @@ namespace Doppler.CloverAPI.Controllers
 
             var cloverServiceMock = new Mock<ICloverService>();
             cloverServiceMock
-                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.IsValidCreditCard(It.IsAny<CreditCard>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(false);
+
+            var clientAddressServiceMock = new Mock<IClientAddressService>();
+            clientAddressServiceMock.Setup(s => s.GetIpAddress(It.IsAny<string>()))
+                .ReturnsAsync("127.0.0.1");
 
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddSingleton(cloverServiceMock.Object);
+                    services.AddSingleton(clientAddressServiceMock.Object);
                 });
 
             }).CreateClient();

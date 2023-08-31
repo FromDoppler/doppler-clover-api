@@ -12,11 +12,13 @@ namespace Doppler.CloverAPI.Controllers
     public class PaymentController : Controller
     {
         private readonly ICloverService _cloverService;
+        private readonly IClientAddressService _clientAddressService;
         private readonly string _paymentType = "";
 
-        public PaymentController(ICloverService cloverService)
+        public PaymentController(ICloverService cloverService, IClientAddressService clientAddressService)
         {
             _cloverService = cloverService;
+            _clientAddressService = clientAddressService;
         }
 
         [Authorize(Policies.OwnResourceOrSuperuser)]
@@ -25,7 +27,8 @@ namespace Doppler.CloverAPI.Controllers
         {
             try
             {
-                var paymentResponse = await _cloverService.CreatePaymentAsync(_paymentType, paymentRequest.ChargeTotal, paymentRequest.CreditCard, paymentRequest.ClientId, accountname);
+                var clientIp = await _clientAddressService.GetIpAddress(accountname);
+                var paymentResponse = await _cloverService.CreatePaymentAsync(_paymentType, paymentRequest.ChargeTotal, paymentRequest.CreditCard, paymentRequest.ClientId, accountname, clientIp);
                 return Ok(paymentResponse);
             }
             catch (CloverApiException ex)
@@ -41,7 +44,8 @@ namespace Doppler.CloverAPI.Controllers
 
             try
             {
-                var refundResponse = await _cloverService.CreateRefundAsync(refundRequest.ChargeTotal, refundRequest.ChargeAuthorizationNumber, accountname, refundRequest.CreditCard);
+                var clientIp = await _clientAddressService.GetIpAddress(accountname);
+                var refundResponse = await _cloverService.CreateRefundAsync(refundRequest.ChargeTotal, refundRequest.ChargeAuthorizationNumber, accountname, refundRequest.CreditCard, clientIp);
                 return Ok(refundResponse);
             }
             catch (CloverApiException ex)
@@ -56,7 +60,8 @@ namespace Doppler.CloverAPI.Controllers
         {
             try
             {
-                var isValidResponse = await _cloverService.IsValidCreditCard(creditCardRequest.CreditCard, creditCardRequest.ClientId, accountname);
+                var clientIp = await _clientAddressService.GetIpAddress(accountname);
+                var isValidResponse = await _cloverService.IsValidCreditCard(creditCardRequest.CreditCard, creditCardRequest.ClientId, accountname, clientIp);
                 return Ok(isValidResponse);
             }
             catch (CloverApiException ex)

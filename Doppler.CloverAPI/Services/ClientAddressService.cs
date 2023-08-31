@@ -7,24 +7,23 @@ namespace Doppler.CloverAPI.Services
 {
     public class ClientAddressService : IClientAddressService
     {
-        private readonly IDatabaseConnectionFactory _connectionFactory;
+        private readonly IUserRepository _userRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ClientAddressService(IDatabaseConnectionFactory connectionFactory, IHttpContextAccessor httpContextAccessor)
+        public ClientAddressService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
-            _connectionFactory = connectionFactory;
+            _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> GetIpAddress(string email)
         {
-            using var connection = _connectionFactory.GetConnection();
+            var clientIp = await _userRepository.GetIpAddressByEmail(email);
 
-            var clientIp = await connection.QuerySingleOrDefaultAsync<string>(@"SELECT [RegistrationIp]
-FROM [dbo].[User]
-WHERE [dbo].[User].[Email] = @email", new { email });
-
-            clientIp ??= _httpContextAccessor.HttpContext?.Request.Headers["Cf-Connecting-Ip"];
+            if (string.IsNullOrEmpty(clientIp))
+            {
+                clientIp = _httpContextAccessor.HttpContext?.Request.Headers["Cf-Connecting-Ip"];
+            }
 
             return clientIp;
         }

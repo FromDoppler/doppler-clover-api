@@ -1,5 +1,6 @@
 using System;
 using Doppler.CloverAPI.Infrastructure;
+using Doppler.CloverAPI.Middleware;
 using Doppler.CloverAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,7 @@ public class Startup
         services.AddControllers();
         services.AddCors();
         services.AddScoped<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICloverService, CloverService>();
         services.AddScoped<IClientAddressService, ClientAddressService>();
 

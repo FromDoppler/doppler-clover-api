@@ -21,7 +21,6 @@ namespace Doppler.CloverAPI.Services
         private const string Currency = "usd";
         private const string ExternalReferenceId = "DopplerEmail";
         private const string RefundReason = "requested_by_customer";
-
         private readonly IConfiguration _configuration;
         private readonly ILogger _logger;
 

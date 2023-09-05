@@ -20,5 +20,14 @@ namespace Doppler.CloverAPI.Infrastructure
 FROM [dbo].[User]
 WHERE [dbo].[User].[Email] = @email", new { email });
         }
+
+        public async Task<int> GetUserIdByEmail(string email)
+        {
+            using var connection = _connectionFactory.GetConnection();
+
+            return await connection.QueryFirstOrDefaultAsync<int>(@"SELECT [IdUser]
+FROM [dbo].[User]
+WHERE [dbo].[User].Email = @email", new { email });
+        }
     }
 }

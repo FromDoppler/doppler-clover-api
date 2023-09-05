@@ -34,6 +34,7 @@ public class Startup
         services.AddCors();
         services.AddScoped<IDatabaseConnectionFactory, DatabaseConnectionFactory>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ILoginXUserRepository, LoginXUserRepository>();
         services.AddScoped<ICloverService, CloverService>();
         services.AddScoped<IClientAddressService, ClientAddressService>();
 

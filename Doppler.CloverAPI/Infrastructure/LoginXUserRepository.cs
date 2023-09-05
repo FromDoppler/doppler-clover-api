@@ -18,7 +18,7 @@ namespace Doppler.CloverAPI.Infrastructure
 
             return await connection.QueryFirstOrDefaultAsync<string>(@"SELECT TOP 1
 [IpAddress]
-FROM [Doppler2011].[dbo].[LoginXUser]
+FROM [dbo].[LoginXUser]
 WHERE [LoginXUser].IdUser = @userId
 ORDER BY [LoginXUser].LoginDate DESC;", new { userId });
         }

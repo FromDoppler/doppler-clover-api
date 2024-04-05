@@ -261,6 +261,10 @@ namespace Doppler.CloverAPI.Services
                 }
                 else
                 {
+                    var error = await response.Content.ReadAsStringAsync();
+
+                    _logger.LogError(error);
+
                     var result = await response.Content.ReadFromJsonAsync<ApiError>();
                     var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
 

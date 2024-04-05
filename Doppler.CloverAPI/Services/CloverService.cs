@@ -12,6 +12,8 @@ using Doppler.CloverAPI.Requests;
 using Doppler.CloverAPI.Response;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Doppler.CloverAPI.Services
 {
@@ -143,21 +145,38 @@ namespace Doppler.CloverAPI.Services
             client.DefaultRequestHeaders.Add("apikey", $"{_configuration["CloverSettings:ApiAccessKey"]}");
             var createTokenUrl = _configuration["CloverSettings:CreateCardTokenUrl"];
 
-            var response = await client.PostAsJsonAsync(createTokenUrl,
-                new CardTokenRequest
+            /* Add logs to request */
+            _logger.LogInformation($"Json CardTokenRequest: {JsonConvert.SerializeObject(new CardTokenRequest
+            {
+                Card = new Entities.Clover.Card
                 {
-                    Card = new Entities.Clover.Card
-                    {
-                        Brand = creditCard.CardType,
-                        Cvv = creditCard.SecurityCode,
-                        ExpMonth = creditCard.CardExpMonth,
-                        ExpYear = creditCard.CardExpYear,
-                        First6 = creditCard.CardNumber[0..6],
-                        Last4 = creditCard.CardNumber[^4..],
-                        Name = creditCard.CardHolderName.Split(' ').Length > 1 ? creditCard.CardHolderName : $"{creditCard.CardHolderName} {creditCard.CardHolderName}",
-                        Number = creditCard.CardNumber
-                    }
-                });
+                    Brand = creditCard.CardType,
+                    Cvv = "***",
+                    ExpMonth = creditCard.CardExpMonth,
+                    ExpYear = creditCard.CardExpYear,
+                    First6 = creditCard.CardNumber[0..6],
+                    Last4 = creditCard.CardNumber[^4..],
+                    Name = creditCard.CardHolderName.Split(' ').Length > 1 ? creditCard.CardHolderName : $"{creditCard.CardHolderName} {creditCard.CardHolderName}",
+                    Number = "*******..."
+                }
+            })}");
+
+            var request = new CardTokenRequest
+            {
+                Card = new Entities.Clover.Card
+                {
+                    Brand = creditCard.CardType,
+                    Cvv = creditCard.SecurityCode,
+                    ExpMonth = creditCard.CardExpMonth,
+                    ExpYear = creditCard.CardExpYear,
+                    First6 = creditCard.CardNumber[0..6],
+                    Last4 = creditCard.CardNumber[^4..],
+                    Name = creditCard.CardHolderName.Split(' ').Length > 1 ? creditCard.CardHolderName : $"{creditCard.CardHolderName} {creditCard.CardHolderName}",
+                    Number = creditCard.CardNumber
+                }
+            };
+
+            var response = await client.PostAsJsonAsync(createTokenUrl, request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -166,6 +185,9 @@ namespace Doppler.CloverAPI.Services
             }
             else
             {
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError(error);
+
                 var result = await response.Content.ReadFromJsonAsync<ApiError>();
                 var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
 
@@ -180,14 +202,18 @@ namespace Doppler.CloverAPI.Services
             client.DefaultRequestHeaders.AddIpClientHeader(clientIp);
             var createCustomerUrl = _configuration["CloverSettings:CreateCustomerUrl"];
 
-            var response = await client.PostAsJsonAsync(createCustomerUrl,
-                new CreateCustomerRequest
-                {
-                    Ecomind = Ecomind,
-                    Email = email,
-                    Name = name,
-                    Source = source
-                });
+            var request = new CreateCustomerRequest
+            {
+                Ecomind = Ecomind,
+                Email = email,
+                Name = name,
+                Source = source
+            };
+
+            /* Add logs to request */
+            _logger.LogInformation($"Json CreateCustomerRequest: {JsonConvert.SerializeObject(request)}");
+
+            var response = await client.PostAsJsonAsync(createCustomerUrl, request);
 
             var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
             _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
@@ -199,6 +225,9 @@ namespace Doppler.CloverAPI.Services
             }
             else
             {
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError(error);
+
                 var result = await response.Content.ReadFromJsonAsync<ApiError>();
                 var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
 
@@ -239,17 +268,21 @@ namespace Doppler.CloverAPI.Services
                 client.DefaultRequestHeaders.AddIpClientHeader(clientIp);
                 var createPaymentUrl = _configuration["CloverSettings:CreatePaymentUrl"];
 
-                var response = await client.PostAsJsonAsync(createPaymentUrl,
-                    new CreateChargeRequest
-                    {
-                        Amount = (int)(chargeTotal * 100),
-                        Capture = !isPreAuthorization,
-                        Currency = Currency,
-                        Description = clientId,
-                        Ecomind = Ecomind,
-                        ExternalReferenceId = ExternalReferenceId,
-                        Source = source
-                    });
+                var request = new CreateChargeRequest
+                {
+                    Amount = (int)(chargeTotal * 100),
+                    Capture = !isPreAuthorization,
+                    Currency = Currency,
+                    Description = clientId,
+                    Ecomind = Ecomind,
+                    ExternalReferenceId = ExternalReferenceId,
+                    Source = source
+                };
+
+                /* Add logs to request */
+                _logger.LogInformation($"Json CreateChargeRequest: {JsonConvert.SerializeObject(request)}");
+
+                var response = await client.PostAsJsonAsync(createPaymentUrl, request);
 
                 var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
                 _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
@@ -262,7 +295,6 @@ namespace Doppler.CloverAPI.Services
                 else
                 {
                     var error = await response.Content.ReadAsStringAsync();
-
                     _logger.LogError(error);
 
                     var result = await response.Content.ReadFromJsonAsync<ApiError>();
@@ -307,14 +339,18 @@ namespace Doppler.CloverAPI.Services
                 client.DefaultRequestHeaders.AddIpClientHeader(clientIp);
                 var createRefundUrl = _configuration["CloverSettings:CreateRefundUrl"];
 
-                var response = await client.PostAsJsonAsync(createRefundUrl,
-                    new CreateRefundRequest
-                    {
-                        Amount = (int)(chargeTotal * 100),
-                        Charge = chargeId,
-                        ExternalReferenceId = ExternalReferenceId,
-                        Reason = RefundReason
-                    });
+                var request = new CreateRefundRequest
+                {
+                    Amount = (int)(chargeTotal * 100),
+                    Charge = chargeId,
+                    ExternalReferenceId = ExternalReferenceId,
+                    Reason = RefundReason
+                };
+
+                /* Add logs to request */
+                _logger.LogInformation($"Json CreateCustomerRequest: {JsonConvert.SerializeObject(request)}");
+
+                var response = await client.PostAsJsonAsync(createRefundUrl, request);
 
                 var xForwardedForValue = GetXForwardedForHeader(client.DefaultRequestHeaders);
                 _logger.LogInformation($"x-forwarded-for: {xForwardedForValue}");
@@ -326,6 +362,9 @@ namespace Doppler.CloverAPI.Services
                 }
                 else
                 {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError(error);
+
                     var result = await response.Content.ReadFromJsonAsync<ApiError>();
                     var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
 

@@ -132,6 +132,9 @@ namespace Doppler.CloverAPI.Services
 
             if (!response.IsSuccessStatusCode)
             {
+                var error = await response.Content.ReadAsStringAsync();
+                _logger.LogError(error);
+
                 var result = await response.Content.ReadFromJsonAsync<ApiError>();
                 var exception = new CloverApiException(result.Error.Code, result.Error.Message) { ApiError = result };
 
@@ -180,6 +183,9 @@ namespace Doppler.CloverAPI.Services
 
             if (response.IsSuccessStatusCode)
             {
+                var responseSuccess = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation(responseSuccess);
+
                 var cardToken = await response.Content.ReadFromJsonAsync<CardTokenResponse>();
                 return cardToken.Id;
             }
@@ -220,6 +226,9 @@ namespace Doppler.CloverAPI.Services
 
             if (response.IsSuccessStatusCode)
             {
+                var responseSuccess = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation(responseSuccess);
+
                 var customer = await response.Content.ReadFromJsonAsync<CreateCustomerResponse>();
                 return new Customer { Id = customer.Id };
             }
@@ -289,6 +298,9 @@ namespace Doppler.CloverAPI.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    var responseSuccess = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation(responseSuccess);
+
                     var result = await response.Content.ReadFromJsonAsync<CreateChargeResponse>();
                     return result.AuthorizationNumber;
                 }
